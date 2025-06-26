@@ -1,6 +1,6 @@
 {
   "name": "@choplin/mcp-gemini-cli",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "MCP server wrapper for Google's Gemini CLI",
   "author": "choplin",
   "license": "MIT",
@@ -63,7 +63,8 @@
     "ignores": [
       "node_modules/**",
       ".git/**",
-      ".claude/**"
+      ".claude/**",
+      "tmp/**"
     ],
     "config": {
       "default": true,
