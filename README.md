@@ -11,7 +11,6 @@ This server exposes two tools that interact with Gemini CLI:
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) runtime installed
 - [Gemini CLI](https://github.com/google-gemini/gemini-cli) installed and configured (optional with --allow-npx flag)
 
 ## 🚀 Quick Start with Claude Code
@@ -130,6 +129,8 @@ geminiChat({
 ```
 
 ## 📝 Development
+
+> **Note**: Development requires [Bun](https://bun.sh) runtime.
 
 ### Run in Development Mode
 
