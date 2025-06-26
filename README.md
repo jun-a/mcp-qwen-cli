@@ -100,7 +100,27 @@ Performs a Google search using Gemini CLI.
 - `yolo` (optional): Skip confirmations
 - `model` (optional): Gemini model to use (default: "gemini-2.5-pro")
 
-**Example Usage:**
+### 2. geminiChat
+
+Have a conversation with Gemini.
+
+**Parameters:**
+
+- `prompt` (required): The conversation prompt
+- `sandbox` (optional): Run in sandbox mode
+- `yolo` (optional): Skip confirmations
+- `model` (optional): Gemini model to use (default: "gemini-2.5-pro")
+
+## 💡 Example Prompts
+
+Try these prompts to see mcp-gemini-cli in action:
+
+- **Search**: "Search for the latest TypeScript 5.0 features using Google"
+- **Chat**: "Ask Gemini to explain the difference between async/await and promises in JavaScript"
+
+## 🛠️ Example Usage
+
+### googleSearch
 
 ```typescript
 // Simple search
@@ -114,18 +134,7 @@ googleSearch({
 })
 ```
 
-### 2. geminiChat
-
-Have a conversation with Gemini.
-
-**Parameters:**
-
-- `prompt` (required): The conversation prompt
-- `sandbox` (optional): Run in sandbox mode
-- `yolo` (optional): Skip confirmations
-- `model` (optional): Gemini model to use (default: "gemini-2.5-pro")
-
-**Example Usage:**
+### geminiChat
 
 ```typescript
 // Simple chat
