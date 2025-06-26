@@ -4,30 +4,49 @@ A simple MCP server wrapper for Google's Gemini CLI that enables AI assistants t
 
 ## What it does
 
-This server exposes two tools:
+This server exposes two tools that interact with Gemini CLI:
 
-- `googleSearch`: Performs Google searches via Gemini CLI
-- `geminiChat`: Sends prompts to Gemini models
+- `googleSearch`: Asks Gemini to perform a Google search using your query
+- `geminiChat`: Sends prompts directly to Gemini for general conversations
 
 ## Prerequisites
 
 - [Bun](https://bun.sh) runtime installed
 - [Gemini CLI](https://github.com/google-gemini/gemini-cli) installed and configured (optional with --allow-npx flag)
 
-## 🚀 Quick Start
+## 🚀 Quick Start with Claude Code
 
-### Option 1: Using npx (Recommended)
+### 1. Add the MCP server
 
 ```bash
-# Ensure Gemini CLI is configured
-# Run the MCP server
-npx @choplin/mcp-gemini-cli
-
-# Or with --allow-npx to auto-install Gemini CLI if needed
-npx @choplin/mcp-gemini-cli --allow-npx
+claude mcp add -s project gemini-cli npx @choplin/mcp-gemini-cli
 ```
 
-### Option 2: Local Development
+Or configure your MCP client with the settings shown in the Installation Options section below.
+
+### 2. Try it out
+
+Example prompts:
+
+- **Search**: "Search for the latest TypeScript 5.0 features using Google"
+- **Chat**: "Ask Gemini to explain the difference between async/await and promises in JavaScript"
+
+## 🔧 Installation Options
+
+### Using npx with --allow-npx flag
+
+```json
+{
+  "mcpServers": {
+    "mcp-gemini-cli": {
+      "command": "npx",
+      "args": ["@choplin/mcp-gemini-cli", "--allow-npx"]
+    }
+  }
+}
+```
+
+### Local Development
 
 1. Clone and install:
 
@@ -37,42 +56,7 @@ cd mcp-gemini-cli
 bun install
 ```
 
-1. Ensure Gemini CLI is installed and configured:
-
-```bash
-# Install Gemini CLI globally (if not already installed)
-npm install -g @google-gemini/cli
-```
-
-1. Run the server:
-
-```bash
-bun run start
-# Or with --allow-npx
-bun run start --allow-npx
-```
-
-## 🔧 Configuration
-
-### Claude Desktop Integration
-
-Add this to your Claude Desktop configuration file:
-
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`  
-**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
-```json
-{
-  "mcpServers": {
-    "mcp-gemini-cli": {
-      "command": "npx",
-      "args": ["@choplin/mcp-gemini-cli"]
-    }
-  }
-}
-```
-
-Or for local development:
+1. Add to Claude Desktop config:
 
 ```json
 {
@@ -95,7 +79,6 @@ Performs a Google search using Gemini CLI.
 
 - `query` (required): The search query
 - `limit` (optional): Maximum number of results
-- `raw` (optional): Return structured JSON with URLs and snippets
 - `sandbox` (optional): Run in sandbox mode
 - `yolo` (optional): Skip confirmations
 - `model` (optional): Gemini model to use (default: "gemini-2.5-pro")
@@ -124,27 +107,26 @@ Try these prompts to see mcp-gemini-cli in action:
 
 ```typescript
 // Simple search
-googleSearch({ query: "latest AI news" })
+googleSearch({ query: "latest AI news" });
 
-// Structured search with limits
-googleSearch({ 
-  query: "TypeScript best practices", 
-  limit: 5, 
-  raw: true 
-})
+// Search with limit
+googleSearch({
+  query: "TypeScript best practices",
+  limit: 5,
+});
 ```
 
 ### geminiChat
 
 ```typescript
 // Simple chat
-geminiChat({ prompt: "Explain quantum computing in simple terms" })
+geminiChat({ prompt: "Explain quantum computing in simple terms" });
 
 // Using a different model
-geminiChat({ 
-  prompt: "Write a haiku about programming", 
-  model: "gemini-2.5-flash" 
-})
+geminiChat({
+  prompt: "Write a haiku about programming",
+  model: "gemini-2.5-flash",
+});
 ```
 
 ## 📝 Development
