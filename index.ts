@@ -186,9 +186,22 @@ async function main() {
   // Check for --allow-npx argument
   const allowNpx = process.argv.includes("--allow-npx");
 
+  // Check if gemini-cli is available at startup
+  try {
+    await decideGeminiCliCommand(allowNpx);
+  } catch (error) {
+    console.error(
+      `Error: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    console.error(
+      "Please install gemini-cli globally or use --allow-npx option.",
+    );
+    process.exit(1);
+  }
+
   const server = new McpServer({
     name: "mcp-gemini-cli",
-    version: "1.0.0",
+    version: "0.1.0",
   });
 
   // Register googleSearch tool
