@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { spawn } from "node:child_process";
 import { z } from "zod";
+import { extname } from "node:path";
 
 // Function to determine the gemini-cli command and its initial arguments
 export async function decideGeminiCliCommand(
@@ -111,6 +112,28 @@ export const GeminiChatParametersSchema = z.object({
     ),
 });
 
+// Zod schema for geminiAnalyzeFile tool parameters
+export const GeminiAnalyzeFileParametersSchema = z.object({
+  filePath: z.string().describe("The absolute path to the file to analyze."),
+  prompt: z
+    .string()
+    .optional()
+    .describe(
+      "Additional instructions for analyzing the file. If not provided, Gemini will provide a general analysis.",
+    ),
+  sandbox: z.boolean().optional().describe("Run gemini-cli in sandbox mode."),
+  yolo: z
+    .boolean()
+    .optional()
+    .describe("Automatically accept all actions (aka YOLO mode)."),
+  model: z
+    .string()
+    .optional()
+    .describe(
+      'The Gemini model to use. Recommended: "gemini-2.5-pro" (default) or "gemini-2.5-flash". Both models are confirmed to work with Google login.',
+    ),
+});
+
 // Extracted tool execution functions for testing
 export async function executeGoogleSearch(args: unknown, allowNpx = false) {
   const parsedArgs = GoogleSearchParametersSchema.parse(args);
@@ -178,6 +201,49 @@ export async function executeGeminiChat(args: unknown, allowNpx = false) {
   if (parsedArgs.model) {
     cliArgs.push("-m", parsedArgs.model);
   }
+  const result = await executeGeminiCli(geminiCliCmd, cliArgs);
+  return result;
+}
+
+// Supported file extensions for geminiAnalyzeFile
+const SUPPORTED_IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.bmp'];
+const SUPPORTED_TEXT_EXTENSIONS = ['.txt', '.md', '.text'];
+const SUPPORTED_DOCUMENT_EXTENSIONS = ['.pdf'];
+const SUPPORTED_EXTENSIONS = [...SUPPORTED_IMAGE_EXTENSIONS, ...SUPPORTED_TEXT_EXTENSIONS, ...SUPPORTED_DOCUMENT_EXTENSIONS];
+
+export async function executeGeminiAnalyzeFile(args: unknown, allowNpx = false) {
+  const parsedArgs = GeminiAnalyzeFileParametersSchema.parse(args);
+  
+  // Check if file extension is supported
+  const fileExtension = extname(parsedArgs.filePath).toLowerCase();
+  if (!SUPPORTED_EXTENSIONS.includes(fileExtension)) {
+    throw new Error(
+      `Unsupported file type: ${fileExtension}. Supported types are:\n` +
+      `Images: ${SUPPORTED_IMAGE_EXTENSIONS.join(', ')}\n` +
+      `Text: ${SUPPORTED_TEXT_EXTENSIONS.join(', ')}\n` +
+      `Documents: ${SUPPORTED_DOCUMENT_EXTENSIONS.join(', ')}`
+    );
+  }
+  
+  const geminiCliCmd = await decideGeminiCliCommand(allowNpx);
+  
+  // Build the prompt with file path
+  let fullPrompt = `Analyze this file: ${parsedArgs.filePath}`;
+  if (parsedArgs.prompt) {
+    fullPrompt += `\n\n${parsedArgs.prompt}`;
+  }
+  
+  const cliArgs = ["-p", fullPrompt];
+  if (parsedArgs.sandbox) {
+    cliArgs.push("-s");
+  }
+  if (parsedArgs.yolo) {
+    cliArgs.push("-y");
+  }
+  if (parsedArgs.model) {
+    cliArgs.push("-m", parsedArgs.model);
+  }
+  
   const result = await executeGeminiCli(geminiCliCmd, cliArgs);
   return result;
 }
@@ -276,6 +342,48 @@ async function main() {
     },
     async (args) => {
       const result = await executeGeminiChat(args, allowNpx);
+      return {
+        content: [
+          {
+            type: "text",
+            text: result,
+          },
+        ],
+      };
+    },
+  );
+
+  // Register geminiAnalyzeFile tool
+  server.registerTool(
+    "geminiAnalyzeFile",
+    {
+      description: "Analyzes files using gemini-cli. Supported file types: Images (.png, .jpg, .jpeg, .gif, .webp, .svg, .bmp), Text (.txt, .md, .text), Documents (.pdf)",
+      inputSchema: {
+        filePath: z.string().describe("The absolute path to the file to analyze. Supported: .png, .jpg, .jpeg, .gif, .webp, .svg, .bmp, .pdf, .txt, .md, .text"),
+        prompt: z
+          .string()
+          .optional()
+          .describe(
+            "Additional instructions for analyzing the file. If not provided, Gemini will provide a general analysis.",
+          ),
+        sandbox: z
+          .boolean()
+          .optional()
+          .describe("Run gemini-cli in sandbox mode."),
+        yolo: z
+          .boolean()
+          .optional()
+          .describe("Automatically accept all actions (aka YOLO mode)."),
+        model: z
+          .string()
+          .optional()
+          .describe(
+            'The Gemini model to use. Recommended: "gemini-2.5-pro" (default) or "gemini-2.5-flash". Both models are confirmed to work with Google login.',
+          ),
+      },
+    },
+    async (args) => {
+      const result = await executeGeminiAnalyzeFile(args, allowNpx);
       return {
         content: [
           {
