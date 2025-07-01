@@ -4,10 +4,11 @@ A simple MCP server wrapper for Google's Gemini CLI that enables AI assistants t
 
 ## What it does
 
-This server exposes two tools that interact with Gemini CLI:
+This server exposes three tools that interact with Gemini CLI:
 
 - `googleSearch`: Asks Gemini to perform a Google search using your query
 - `geminiChat`: Sends prompts directly to Gemini for general conversations
+- `geminiAnalyzeFile`: Analyzes files (images, PDFs, text) using Gemini's multimodal capabilities
 
 ## Prerequisites
 
@@ -29,6 +30,7 @@ Example prompts:
 
 - **Search**: "Search for the latest TypeScript 5.0 features using Google"
 - **Chat**: "Ask Gemini to explain the difference between async/await and promises in JavaScript"
+- **File Analysis**: "Ask Gemini to analyze the image at /path/to/screenshot.png"
 
 ## 🔧 Installation Options
 
@@ -93,12 +95,30 @@ Have a conversation with Gemini.
 - `yolo` (optional): Skip confirmations
 - `model` (optional): Gemini model to use (default: "gemini-2.5-pro")
 
+### 3. geminiAnalyzeFile
+
+Analyze files using Gemini's multimodal capabilities.
+
+**Supported file types:**
+- **Images**: PNG, JPG, JPEG, GIF, WEBP, SVG, BMP
+- **Text**: TXT, MD, TEXT
+- **Documents**: PDF
+
+**Parameters:**
+
+- `filePath` (required): The absolute path to the file to analyze
+- `prompt` (optional): Additional instructions for analyzing the file
+- `sandbox` (optional): Run in sandbox mode
+- `yolo` (optional): Skip confirmations
+- `model` (optional): Gemini model to use (default: "gemini-2.5-pro")
+
 ## 💡 Example Prompts
 
 Try these prompts to see mcp-gemini-cli in action:
 
 - **Search**: "Search for the latest TypeScript 5.0 features using Google"
 - **Chat**: "Ask Gemini to explain the difference between async/await and promises in JavaScript"
+- **File Analysis**: "Ask Gemini to describe what's in this image: /Users/me/Desktop/screenshot.png"
 
 ## 🛠️ Example Usage
 
@@ -126,6 +146,25 @@ geminiChat({
   prompt: "Write a haiku about programming",
   model: "gemini-2.5-flash",
 });
+```
+
+### geminiAnalyzeFile
+
+```typescript
+// Analyze an image
+geminiAnalyzeFile({ 
+  filePath: "/path/to/image.png",
+  prompt: "What objects are in this image?"
+});
+
+// Analyze a PDF
+geminiAnalyzeFile({
+  filePath: "/path/to/document.pdf",
+  prompt: "Summarize the key points in this document"
+});
+
+// General analysis without specific instructions
+geminiAnalyzeFile({ filePath: "/path/to/file.jpg" });
 ```
 
 ## 📝 Development
