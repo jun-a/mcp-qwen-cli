@@ -214,6 +214,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📋 Changelog
 
+### [0.3.1] - 2025-07-03
+
+#### Fixed
+
+- Fixed Windows compatibility issue with `which` command
+
 ### [0.3.0] - 2025-07-02
 
 #### Breaking Changes
