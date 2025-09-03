@@ -1,7 +1,7 @@
 {
-  "name": "mcp-gemini-cli",
-  "version": "0.3.1",
-  "description": "MCP server wrapper for Google's Gemini CLI",
+  "name": "mcp-qwen-cli",
+  "version": "0.4.0",
+  "description": "MCP server wrapper for Qwen Code CLI",
   "author": "choplin",
   "license": "MIT",
   "type": "module",
@@ -9,7 +9,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "mcp-gemini-cli": "./dist/index.js"
+    "mcp-qwen-cli": "dist/index.js"
   },
   "files": [
     "dist"
@@ -17,20 +17,21 @@
   "keywords": [
     "mcp",
     "model-context-protocol",
-    "gemini",
-    "gemini-cli",
-    "google",
+    "qwen",
+    "qwen-code",
+    "qwen-cli",
+    "alibaba",
     "ai",
     "llm"
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/choplin/mcp-gemini-cli"
+    "url": "git+https://github.com/choplin/mcp-qwen-cli.git"
   },
   "bugs": {
-    "url": "https://github.com/choplin/mcp-gemini-cli/issues"
+    "url": "https://github.com/choplin/mcp-qwen-cli/issues"
   },
-  "homepage": "https://github.com/choplin/mcp-gemini-cli#readme",
+  "homepage": "https://github.com/choplin/mcp-qwen-cli#readme",
   "peerDependencies": {
     "typescript": "^5"
   },
@@ -57,6 +58,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.13.1",
+    "@qwen-code/qwen-code": "^0.0.10",
     "zod": "^3.25.67"
   },
   "markdownlint-cli2": {

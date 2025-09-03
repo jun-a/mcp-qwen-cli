@@ -1,25 +1,53 @@
-# MCP Gemini CLI
+# MCP Qwen CLI
 
-A simple MCP server wrapper for Google's Gemini CLI that enables AI assistants to use Gemini's capabilities through the Model Context Protocol.
+A simple MCP server wrapper for Qwen Code CLI that enables AI assistants to use Qwen's capabilities through the Model Context Protocol.
 
 ## What it does
 
-This server exposes three tools that interact with Gemini CLI:
+This server exposes three tools that interact with Qwen Code CLI:
 
-- `googleSearch`: Asks Gemini to perform a Google search using your query
-- `chat`: Sends prompts directly to Gemini for general conversations
-- `analyzeFile`: Analyzes files (images, PDFs, text) using Gemini's multimodal capabilities
+- `qwenSearch`: Asks Qwen to perform a web search using your query
+- `chat`: Sends prompts directly to Qwen for general conversations
+- `analyzeFile`: Analyzes files (images, PDFs, text) using Qwen's multimodal capabilities
 
 ## Prerequisites
 
-- [Gemini CLI](https://github.com/google-gemini/gemini-cli) installed and configured (optional with --allow-npx flag)
+- [Qwen Code CLI](https://github.com/QwenLM/qwen-code) installed and configured (optional with --allow-npx flag)
+
+## Authentication Setup
+
+Qwen CLI supports both browser authentication and API key authentication:
+
+### Option 1: Browser Authentication (Recommended for personal use)
+
+1. Install Qwen CLI: `npm install -g @qwen-code/qwen-code`
+2. Run `qwen` once to complete browser authentication
+3. No additional environment variables needed
+
+### Option 2: API Key Authentication
+
+Set up environment variables for API access:
+
+```bash
+# For DashScope (Alibaba Cloud) - Recommended
+export OPENAI_API_KEY="your_api_key_here"
+export OPENAI_BASE_URL="https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+export OPENAI_MODEL="qwen3-coder-plus"
+
+# For OpenRouter (free tier available)
+export OPENAI_API_KEY="your_api_key_here"
+export OPENAI_BASE_URL="https://openrouter.ai/api/v1"
+export OPENAI_MODEL="qwen/qwen3-coder:free"
+```
+
+The server automatically detects which authentication method to use based on your environment.
 
 ## 🚀 Quick Start with Claude Code
 
 ### 1. Add the MCP server
 
 ```bash
-claude mcp add -s project gemini-cli -- npx mcp-gemini-cli --allow-npx
+claude mcp add -s project qwen-cli -- npx mcp-qwen-cli --allow-npx
 ```
 
 Or configure your MCP client with the settings shown in the Installation Options section below.
@@ -28,9 +56,9 @@ Or configure your MCP client with the settings shown in the Installation Options
 
 Example prompts:
 
-- **Search**: "Search for the latest TypeScript 5.0 features using Google"
-- **Chat**: "Ask Gemini to explain the difference between async/await and promises in JavaScript"
-- **File Analysis**: "Ask Gemini to analyze the image at /path/to/screenshot.png"
+- **Search**: "Search for the latest TypeScript 5.0 features using Qwen"
+- **Chat**: "Ask Qwen to explain the difference between async/await and promises in JavaScript"
+- **File Analysis**: "Ask Qwen to analyze the image at /path/to/screenshot.png"
 
 ## 🔧 Installation Options
 
@@ -39,9 +67,9 @@ Example prompts:
 ```json
 {
   "mcpServers": {
-    "mcp-gemini-cli": {
+    "mcp-qwen-cli": {
       "command": "npx",
-      "args": ["mcp-gemini-cli", "--allow-npx"]
+      "args": ["mcp-qwen-cli", "--allow-npx"]
     }
   }
 }
@@ -52,8 +80,8 @@ Example prompts:
 1. Clone and install:
 
 ```bash
-git clone https://github.com/choplin/mcp-gemini-cli
-cd mcp-gemini-cli
+git clone https://github.com/choplin/mcp-qwen-cli
+cd mcp-qwen-cli
 bun install
 ```
 
@@ -62,9 +90,9 @@ bun install
 ```json
 {
   "mcpServers": {
-    "mcp-gemini-cli": {
+    "mcp-qwen-cli": {
       "command": "bun",
-      "args": ["run", "/path/to/mcp-gemini-cli/index.ts"]
+      "args": ["run", "/path/to/mcp-qwen-cli/index.ts"]
     }
   }
 }
@@ -72,9 +100,9 @@ bun install
 
 ## 🛠️ Available Tools
 
-### 1. googleSearch
+### 1. qwenSearch
 
-Performs a Google search using Gemini CLI.
+Performs a web search using Qwen Code CLI.
 
 **Parameters:**
 
@@ -82,22 +110,22 @@ Performs a Google search using Gemini CLI.
 - `limit` (optional): Maximum number of results
 - `sandbox` (optional): Run in sandbox mode
 - `yolo` (optional): Skip confirmations
-- `model` (optional): Gemini model to use (default: "gemini-2.5-pro")
+- `model` (optional): Qwen model to use (default: "qwen3-coder-plus")
 
 ### 2. chat
 
-Have a conversation with Gemini.
+Have a conversation with Qwen.
 
 **Parameters:**
 
 - `prompt` (required): The conversation prompt
 - `sandbox` (optional): Run in sandbox mode
 - `yolo` (optional): Skip confirmations
-- `model` (optional): Gemini model to use (default: "gemini-2.5-pro")
+- `model` (optional): Qwen model to use (default: "qwen3-coder-plus")
 
 ### 3. analyzeFile
 
-Analyze files using Gemini's multimodal capabilities.
+Analyze files using Qwen's multimodal capabilities.
 
 **Supported file types:**
 
@@ -111,26 +139,26 @@ Analyze files using Gemini's multimodal capabilities.
 - `prompt` (optional): Additional instructions for analyzing the file
 - `sandbox` (optional): Run in sandbox mode
 - `yolo` (optional): Skip confirmations
-- `model` (optional): Gemini model to use (default: "gemini-2.5-pro")
+- `model` (optional): Qwen model to use (default: "qwen3-coder-plus")
 
 ## 💡 Example Prompts
 
-Try these prompts to see mcp-gemini-cli in action:
+Try these prompts to see mcp-qwen-cli in action:
 
-- **Search**: "Search for the latest TypeScript 5.0 features using Google"
-- **Chat**: "Ask Gemini to explain the difference between async/await and promises in JavaScript"
-- **File Analysis**: "Ask Gemini to describe what's in this image: /Users/me/Desktop/screenshot.png"
+- **Search**: "Search for the latest TypeScript 5.0 features using Qwen"
+- **Chat**: "Ask Qwen to explain the difference between async/await and promises in JavaScript"
+- **File Analysis**: "Ask Qwen to describe what's in this image: /Users/me/Desktop/screenshot.png"
 
 ## 🛠️ Example Usage
 
-### googleSearch
+### qwenSearch
 
 ```typescript
 // Simple search
-googleSearch({ query: "latest AI news" });
+qwenSearch({ query: "latest AI news" });
 
 // Search with limit
-googleSearch({
+qwenSearch({
   query: "TypeScript best practices",
   limit: 5,
 });
@@ -145,7 +173,7 @@ chat({ prompt: "Explain quantum computing in simple terms" });
 // Using a different model
 chat({
   prompt: "Write a haiku about programming",
-  model: "gemini-2.5-flash",
+  model: "qwen3-coder",
 });
 ```
 
@@ -153,7 +181,7 @@ chat({
 
 ```typescript
 // Analyze an image
-analyzeFile({ 
+analyzeFile({
   filePath: "/path/to/image.png",
   prompt: "What objects are in this image?"
 });
@@ -214,6 +242,20 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📋 Changelog
 
+### [0.4.0] - 2025-09-03
+
+#### Breaking Changes
+
+- Migrated from Gemini CLI to Qwen Code CLI
+- Tool names: `googleSearch` → `qwenSearch`
+- Package name: `mcp-gemini-cli` → `mcp-qwen-cli`
+- Default model: `gemini-2.5-pro` → `qwen3-coder-plus`
+
+#### New Features (0.3.1)
+
+- Support for Qwen Code CLI with enhanced code understanding
+- Updated authentication methods for Qwen services
+
 ### [0.3.1] - 2025-07-03
 
 #### Fixed
@@ -222,12 +264,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ### [0.3.0] - 2025-07-02
 
-#### Breaking Changes
+#### Breaking Changes (0.3.0)
 
 - Tool names: `geminiChat` → `chat`, `geminiAnalyzeFile` → `analyzeFile`
 - Package name: `@choplin/mcp-gemini-cli` → `mcp-gemini-cli`
 
-#### New Features
+#### New Features (0.3.0)
 
 - `analyzeFile` tool for images (PNG/JPG/GIF/etc), PDFs, and text files
 
@@ -238,5 +280,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🔗 Related Links
 
 - [Model Context Protocol (MCP)](https://modelcontextprotocol.io/)
-- [Gemini CLI](https://github.com/google-gemini/gemini-cli)
+- [Qwen Code CLI](https://github.com/QwenLM/qwen-code)
 - [Bun Runtime](https://bun.sh)

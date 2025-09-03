@@ -1,53 +1,52 @@
 import { describe, expect, test, beforeAll } from "bun:test";
 import {
-  decideGeminiCliCommand,
-  executeGeminiCli,
-  executeGoogleSearch,
-  executeGeminiChat,
-} from "../../index.ts";
+  decideQwenCliCommand,
+  executeQwenCli,
+  executeQwenSearch,
+  executeQwenChat,
+  executeQwenAnalyzeFile,
+} from "../../index";
 
-// Check if gemini-cli is available
-let isGeminiCliAvailable = false;
+// Check if qwen-cli is available
+let isQwenCliAvailable = false;
 
 beforeAll(async () => {
   try {
-    await decideGeminiCliCommand(false);
-    isGeminiCliAvailable = true;
+    await decideQwenCliCommand(false);
+    isQwenCliAvailable = true;
   } catch {
-    isGeminiCliAvailable = false;
+    isQwenCliAvailable = false;
   }
 });
 
-describe("MCP Gemini CLI Integration Tests", () => {
-  describe("gemini-cli detection", () => {
-    test("decideGeminiCliCommand finds gemini-cli or falls back correctly", async () => {
+describe("MCP Qwen CLI Integration Tests", () => {
+  describe("qwen-cli detection", () => {
+    test("decideQwenCliCommand finds qwen-cli or falls back correctly", async () => {
       try {
         // Test without npx fallback
-        const cmdWithoutNpx = await decideGeminiCliCommand(false);
-        expect(cmdWithoutNpx.command).toBe("gemini");
+        const cmdWithoutNpx = await decideQwenCliCommand(false);
+        expect(cmdWithoutNpx.command).toBe("qwen");
         expect(cmdWithoutNpx.initialArgs).toEqual([]);
       } catch (error) {
-        // If gemini-cli is not installed, it should throw the expected error
+        // If qwen-cli is not installed, it should throw the expected error
         expect(error instanceof Error && error.message).toContain(
-          "gemini not found globally",
+          "qwen not found globally",
         );
       }
 
       // Test with npx fallback
-      const cmdWithNpx = await decideGeminiCliCommand(true);
-      expect(cmdWithNpx.command).toBeOneOf(["gemini", "npx"]);
+      const cmdWithNpx = await decideQwenCliCommand(true);
+      expect(cmdWithNpx.command).toBeOneOf(["qwen", "npx"]);
       if (cmdWithNpx.command === "npx") {
-        expect(cmdWithNpx.initialArgs).toEqual([
-          "https://github.com/google-gemini/gemini-cli",
-        ]);
+        expect(cmdWithNpx.initialArgs).toEqual(["@qwen-code/qwen-code"]);
       }
     });
 
-    test("executeGeminiCli handles errors correctly", async () => {
+    test("executeQwenCli handles errors correctly", async () => {
       try {
         // Try to execute a command that will likely fail
-        const result = await executeGeminiCli(
-          { command: "gemini", initialArgs: [] },
+        const result = await executeQwenCli(
+          { command: "qwen", initialArgs: [] },
           ["--invalid-flag-that-does-not-exist"],
         );
         // If it somehow succeeds, check that we got a string
@@ -56,23 +55,23 @@ describe("MCP Gemini CLI Integration Tests", () => {
         // This is expected to fail
         expect(error).toBeInstanceOf(Error);
         expect(error instanceof Error && error.message).toMatch(
-          /gemini exited with code|Executable not found/,
+          /qwen exited with code|Executable not found/,
         );
       }
     });
   });
 
   describe("tool execution", () => {
-    test.if(isGeminiCliAvailable)(
-      "googleSearchTool executes without error",
+    test.if(isQwenCliAvailable)(
+      "qwenSearchTool executes without error",
       async () => {
-        const result = await executeGoogleSearch({
+        const result = await executeQwenSearch({
           query: "test search",
           limit: 3,
           raw: true,
           sandbox: true,
           yolo: true, // Auto-accept to avoid hanging
-          model: "gemini-2.5-flash",
+          model: "qwen3-coder-plus",
         });
 
         // Check that we got some result
@@ -82,14 +81,14 @@ describe("MCP Gemini CLI Integration Tests", () => {
       30000,
     ); // 30 second timeout
 
-    test.if(isGeminiCliAvailable)(
+    test.if(isQwenCliAvailable)(
       "chatTool executes without error",
       async () => {
-        const result = await executeGeminiChat({
+        const result = await executeQwenChat({
           prompt: "Say hello",
           sandbox: true,
           yolo: true, // Auto-accept to avoid hanging
-          model: "gemini-2.5-flash",
+          model: "qwen3-coder-plus",
         });
 
         // Check that we got a response
@@ -99,8 +98,30 @@ describe("MCP Gemini CLI Integration Tests", () => {
       30000,
     ); // 30 second timeout
 
-    if (!isGeminiCliAvailable) {
-      test("gemini-cli not available", () => {
+    test.if(isQwenCliAvailable)(
+      "analyzeFileTool executes without error",
+      async () => {
+        // Create a temporary test file
+        const testFilePath = "/tmp/test.txt";
+        await Bun.write(testFilePath, "This is a test file for analysis.");
+
+        const result = await executeQwenAnalyzeFile({
+          filePath: testFilePath,
+          prompt: "Summarize this file",
+          sandbox: true,
+          yolo: true,
+          model: "qwen3-coder-plus",
+        });
+
+        // Check that we got a response
+        expect(result).toBeDefined();
+        expect(typeof result).toBe("string");
+      },
+      30000,
+    ); // 30 second timeout
+
+    if (!isQwenCliAvailable) {
+      test("qwen-cli not available", () => {
         expect(true).toBe(true);
       });
     }

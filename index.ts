@@ -4,26 +4,26 @@ import { spawn } from "node:child_process";
 import { z } from "zod";
 import { extname } from "node:path";
 
-// Function to determine the gemini-cli command and its initial arguments
-export async function decideGeminiCliCommand(
+// Function to determine the qwen-cli command and its initial arguments
+export async function decideQwenCliCommand(
   allowNpx: boolean,
 ): Promise<{ command: string; initialArgs: string[] }> {
   return new Promise((resolve, reject) => {
     const isWindows = process.platform === "win32";
     const whichCmd = isWindows ? "where" : "which";
-    const child = spawn(whichCmd, ["gemini"]);
+    const child = spawn(whichCmd, ["qwen"]);
     child.on("close", (code) => {
       if (code === 0) {
-        resolve({ command: "gemini", initialArgs: [] });
+        resolve({ command: "qwen", initialArgs: [] });
       } else if (allowNpx) {
         resolve({
           command: "npx",
-          initialArgs: ["https://github.com/google-gemini/gemini-cli"],
+          initialArgs: ["@qwen-code/qwen-code"],
         });
       } else {
         reject(
           new Error(
-            "gemini not found globally and --allow-npx option not specified.",
+            "qwen not found globally and --allow-npx option not specified.",
           ),
         );
       }
@@ -34,13 +34,26 @@ export async function decideGeminiCliCommand(
   });
 }
 
-// Function to execute gemini-cli command
-export async function executeGeminiCli(
-  geminiCliCommand: { command: string; initialArgs: string[] },
+// Function to execute qwen-cli command
+export async function executeQwenCli(
+  qwenCliCommand: { command: string; initialArgs: string[] },
   args: string[],
 ): Promise<string> {
-  const { command, initialArgs } = geminiCliCommand;
-  const commandArgs = [...initialArgs, ...args];
+  const { command, initialArgs } = qwenCliCommand;
+  const commandArgs = [...initialArgs];
+
+  // Add OpenAI API configuration if environment variables are set
+  if (process.env.OPENAI_API_KEY) {
+    commandArgs.push("--openai-api-key", process.env.OPENAI_API_KEY);
+  }
+  if (process.env.OPENAI_BASE_URL) {
+    commandArgs.push("--openai-base-url", process.env.OPENAI_BASE_URL);
+  }
+  if (process.env.OPENAI_MODEL) {
+    commandArgs.push("--openai-logging");
+  }
+
+  commandArgs.push(...args);
 
   return new Promise((resolve, reject) => {
     const child = spawn(command, commandArgs, {
@@ -64,7 +77,7 @@ export async function executeGeminiCli(
       if (code === 0) {
         resolve(stdout);
       } else {
-        reject(new Error(`gemini exited with code ${code}: ${stderr}`));
+        reject(new Error(`qwen exited with code ${code}: ${stderr}`));
       }
     });
 
@@ -74,8 +87,8 @@ export async function executeGeminiCli(
   });
 }
 
-// Zod schema for googleSearch tool parameters
-export const GoogleSearchParametersSchema = z.object({
+// Zod schema for qwenSearch tool parameters
+export const QwenSearchParametersSchema = z.object({
   query: z.string().describe("The search query."),
   limit: z
     .number()
@@ -85,7 +98,7 @@ export const GoogleSearchParametersSchema = z.object({
     .boolean()
     .optional()
     .describe("Return raw search results with URLs and snippets (optional)."),
-  sandbox: z.boolean().optional().describe("Run gemini-cli in sandbox mode."),
+  sandbox: z.boolean().optional().describe("Run qwen-cli in sandbox mode."),
   yolo: z
     .boolean()
     .optional()
@@ -94,14 +107,14 @@ export const GoogleSearchParametersSchema = z.object({
     .string()
     .optional()
     .describe(
-      'The Gemini model to use. Recommended: "gemini-2.5-pro" (default) or "gemini-2.5-flash". Both models are confirmed to work with Google login.',
+      'The Qwen model to use. Recommended: "qwen3-coder-plus" (default) or "qwen3-coder".',
     ),
 });
 
-// Zod schema for geminiChat tool parameters
-export const GeminiChatParametersSchema = z.object({
+// Zod schema for qwenChat tool parameters
+export const QwenChatParametersSchema = z.object({
   prompt: z.string().describe("The prompt for the chat conversation."),
-  sandbox: z.boolean().optional().describe("Run gemini-cli in sandbox mode."),
+  sandbox: z.boolean().optional().describe("Run qwen-cli in sandbox mode."),
   yolo: z
     .boolean()
     .optional()
@@ -110,20 +123,20 @@ export const GeminiChatParametersSchema = z.object({
     .string()
     .optional()
     .describe(
-      'The Gemini model to use. Recommended: "gemini-2.5-pro" (default) or "gemini-2.5-flash". Both models are confirmed to work with Google login.',
+      'The Qwen model to use. Recommended: "qwen3-coder-plus" (default) or "qwen3-coder".',
     ),
 });
 
-// Zod schema for geminiAnalyzeFile tool parameters
-export const GeminiAnalyzeFileParametersSchema = z.object({
+// Zod schema for qwenAnalyzeFile tool parameters
+export const QwenAnalyzeFileParametersSchema = z.object({
   filePath: z.string().describe("The absolute path to the file to analyze."),
   prompt: z
     .string()
     .optional()
     .describe(
-      "Additional instructions for analyzing the file. If not provided, Gemini will provide a general analysis.",
+      "Additional instructions for analyzing the file. If not provided, Qwen will provide a general analysis.",
     ),
-  sandbox: z.boolean().optional().describe("Run gemini-cli in sandbox mode."),
+  sandbox: z.boolean().optional().describe("Run qwen-cli in sandbox mode."),
   yolo: z
     .boolean()
     .optional()
@@ -132,14 +145,14 @@ export const GeminiAnalyzeFileParametersSchema = z.object({
     .string()
     .optional()
     .describe(
-      'The Gemini model to use. Recommended: "gemini-2.5-pro" (default) or "gemini-2.5-flash". Both models are confirmed to work with Google login.',
+      'The Qwen model to use. Recommended: "qwen3-coder-plus" (default) or "qwen3-coder".',
     ),
 });
 
 // Extracted tool execution functions for testing
-export async function executeGoogleSearch(args: unknown, allowNpx = false) {
-  const parsedArgs = GoogleSearchParametersSchema.parse(args);
-  const geminiCliCmd = await decideGeminiCliCommand(allowNpx);
+export async function executeQwenSearch(args: unknown, allowNpx = false) {
+  const parsedArgs = QwenSearchParametersSchema.parse(args);
+  const qwenCliCmd = await decideQwenCliCommand(allowNpx);
 
   // Build prompt based on options
   let prompt: string;
@@ -186,13 +199,13 @@ export async function executeGoogleSearch(args: unknown, allowNpx = false) {
   }
 
   // Return raw result without parsing - let the client handle it
-  const result = await executeGeminiCli(geminiCliCmd, cliArgs);
+  const result = await executeQwenCli(qwenCliCmd, cliArgs);
   return result;
 }
 
-export async function executeGeminiChat(args: unknown, allowNpx = false) {
-  const parsedArgs = GeminiChatParametersSchema.parse(args);
-  const geminiCliCmd = await decideGeminiCliCommand(allowNpx);
+export async function executeQwenChat(args: unknown, allowNpx = false) {
+  const parsedArgs = QwenChatParametersSchema.parse(args);
+  const qwenCliCmd = await decideQwenCliCommand(allowNpx);
   const cliArgs = ["-p", parsedArgs.prompt];
   if (parsedArgs.sandbox) {
     cliArgs.push("-s");
@@ -203,7 +216,7 @@ export async function executeGeminiChat(args: unknown, allowNpx = false) {
   if (parsedArgs.model) {
     cliArgs.push("-m", parsedArgs.model);
   }
-  const result = await executeGeminiCli(geminiCliCmd, cliArgs);
+  const result = await executeQwenCli(qwenCliCmd, cliArgs);
   return result;
 }
 
@@ -225,11 +238,8 @@ const SUPPORTED_EXTENSIONS = [
   ...SUPPORTED_DOCUMENT_EXTENSIONS,
 ];
 
-export async function executeGeminiAnalyzeFile(
-  args: unknown,
-  allowNpx = false,
-) {
-  const parsedArgs = GeminiAnalyzeFileParametersSchema.parse(args);
+export async function executeQwenAnalyzeFile(args: unknown, allowNpx = false) {
+  const parsedArgs = QwenAnalyzeFileParametersSchema.parse(args);
 
   // Check if file extension is supported
   const fileExtension = extname(parsedArgs.filePath).toLowerCase();
@@ -242,7 +252,7 @@ export async function executeGeminiAnalyzeFile(
     );
   }
 
-  const geminiCliCmd = await decideGeminiCliCommand(allowNpx);
+  const qwenCliCmd = await decideQwenCliCommand(allowNpx);
 
   // Build the prompt with file path
   let fullPrompt = `Analyze this file: ${parsedArgs.filePath}`;
@@ -261,7 +271,7 @@ export async function executeGeminiAnalyzeFile(
     cliArgs.push("-m", parsedArgs.model);
   }
 
-  const result = await executeGeminiCli(geminiCliCmd, cliArgs);
+  const result = await executeQwenCli(qwenCliCmd, cliArgs);
   return result;
 }
 
@@ -269,30 +279,30 @@ async function main() {
   // Check for --allow-npx argument
   const allowNpx = process.argv.includes("--allow-npx");
 
-  // Check if gemini-cli is available at startup
+  // Check if qwen-cli is available at startup
   try {
-    await decideGeminiCliCommand(allowNpx);
+    await decideQwenCliCommand(allowNpx);
   } catch (error) {
     console.error(
       `Error: ${error instanceof Error ? error.message : String(error)}`,
     );
     console.error(
-      "Please install gemini-cli globally or use --allow-npx option.",
+      "Please install qwen-cli globally or use --allow-npx option.",
     );
     process.exit(1);
   }
 
   const server = new McpServer({
-    name: "mcp-gemini-cli",
-    version: "0.3.0",
+    name: "mcp-qwen-cli",
+    version: "0.4.0",
   });
 
-  // Register googleSearch tool
+  // Register qwenSearch tool
   server.registerTool(
-    "googleSearch",
+    "qwenSearch",
     {
       description:
-        "Performs a Google search using gemini-cli and returns structured results.",
+        "Performs a web search using qwen-cli and returns structured results.",
       inputSchema: {
         query: z.string().describe("The search query."),
         limit: z
@@ -308,7 +318,7 @@ async function main() {
         sandbox: z
           .boolean()
           .optional()
-          .describe("Run gemini-cli in sandbox mode."),
+          .describe("Run qwen-cli in sandbox mode."),
         yolo: z
           .boolean()
           .optional()
@@ -317,12 +327,12 @@ async function main() {
           .string()
           .optional()
           .describe(
-            'The Gemini model to use. Recommended: "gemini-2.5-pro" (default) or "gemini-2.5-flash". Both models are confirmed to work with Google login.',
+            'The Qwen model to use. Recommended: "qwen3-coder-plus" (default) or "qwen3-coder".',
           ),
       },
     },
     async (args) => {
-      const result = await executeGoogleSearch(args, allowNpx);
+      const result = await executeQwenSearch(args, allowNpx);
       return {
         content: [
           {
@@ -338,13 +348,13 @@ async function main() {
   server.registerTool(
     "chat",
     {
-      description: "Engages in a chat conversation with gemini-cli.",
+      description: "Engages in a chat conversation with qwen-cli.",
       inputSchema: {
         prompt: z.string().describe("The prompt for the chat conversation."),
         sandbox: z
           .boolean()
           .optional()
-          .describe("Run gemini-cli in sandbox mode."),
+          .describe("Run qwen-cli in sandbox mode."),
         yolo: z
           .boolean()
           .optional()
@@ -353,12 +363,12 @@ async function main() {
           .string()
           .optional()
           .describe(
-            'The Gemini model to use. Recommended: "gemini-2.5-pro" (default) or "gemini-2.5-flash". Both models are confirmed to work with Google login.',
+            'The Qwen model to use. Recommended: "qwen3-coder-plus" (default) or "qwen3-coder".',
           ),
       },
     },
     async (args) => {
-      const result = await executeGeminiChat(args, allowNpx);
+      const result = await executeQwenChat(args, allowNpx);
       return {
         content: [
           {
@@ -375,7 +385,7 @@ async function main() {
     "analyzeFile",
     {
       description:
-        "Analyzes files using gemini-cli. Supported file types: Images (.png, .jpg, .jpeg, .gif, .webp, .svg, .bmp), Text (.txt, .md, .text), Documents (.pdf)",
+        "Analyzes files using qwen-cli. Supported file types: Images (.png, .jpg, .jpeg, .gif, .webp, .svg, .bmp), Text (.txt, .md, .text), Documents (.pdf)",
       inputSchema: {
         filePath: z
           .string()
@@ -386,12 +396,12 @@ async function main() {
           .string()
           .optional()
           .describe(
-            "Additional instructions for analyzing the file. If not provided, Gemini will provide a general analysis.",
+            "Additional instructions for analyzing the file. If not provided, Qwen will provide a general analysis.",
           ),
         sandbox: z
           .boolean()
           .optional()
-          .describe("Run gemini-cli in sandbox mode."),
+          .describe("Run qwen-cli in sandbox mode."),
         yolo: z
           .boolean()
           .optional()
@@ -400,12 +410,12 @@ async function main() {
           .string()
           .optional()
           .describe(
-            'The Gemini model to use. Recommended: "gemini-2.5-pro" (default) or "gemini-2.5-flash". Both models are confirmed to work with Google login.',
+            'The Qwen model to use. Recommended: "qwen3-coder-plus" (default) or "qwen3-coder".',
           ),
       },
     },
     async (args) => {
-      const result = await executeGeminiAnalyzeFile(args, allowNpx);
+      const result = await executeQwenAnalyzeFile(args, allowNpx);
       return {
         content: [
           {
